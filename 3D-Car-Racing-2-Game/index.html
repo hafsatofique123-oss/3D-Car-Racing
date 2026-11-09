@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>3D Speed Racer — Nitro Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 3D WebGL Canvas Container -->
+  <div id="game"></div>
+
+  <!-- Nitro Fullscreen Speed Tunnel & Blur Vignette -->
+  <div id="nitroVignette" class="nitro-vignette"></div>
+
+  <!-- Near Miss / Combo Float Notification -->
+  <div id="comboBanner" class="combo-banner"></div>
+
+  <!-- Countdown Overlay -->
+  <div id="countdownOverlay" class="countdown-overlay">
+    <div id="countdownText" class="countdown-text"></div>
+  </div>
+
+  <!-- Top HUD Status Bar -->
+  <header class="hud-top">
+    <div class="hud-card">
+      <div class="hud-label">DISTANCE</div>
+      <div class="hud-value"><span id="distance">0</span> <span class="unit">M</span></div>
+    </div>
+    <div class="hud-card score-card">
+      <div class="hud-label">SCORE</div>
+      <div class="hud-value" id="score">0</div>
+    </div>
+    <div class="hud-card">
+      <div class="hud-label">NEAR MISS</div>
+      <div class="hud-value"><span id="nearMisses">0</span> <span class="unit">x</span></div>
+    </div>
+    <button id="soundBtn" class="sound-btn" aria-label="Toggle Sound" title="Toggle Sound">🔊</button>
+  </header>
+
+  <!-- Bottom Cockpit Dashboard -->
+  <div class="cockpit-dash">
+    <!-- Speedometer Gauge & Gear Indicator -->
+    <div class="speed-cluster">
+      <div class="gauge-ring">
+        <svg viewBox="0 0 160 100" class="gauge-svg">
+          <path class="gauge-bg-arc" d="M 20 85 A 65 65 0 0 1 140 85" fill="none" stroke-width="10" stroke-linecap="round"/>
+          <path id="gaugeActiveArc" class="gauge-active-arc" d="M 20 85 A 65 65 0 0 1 140 85" fill="none" stroke-width="10" stroke-linecap="round"/>
+          <line id="gaugeNeedle" class="gauge-needle" x1="80" y1="85" x2="25" y2="85" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="80" cy="85" r="7" class="gauge-center"/>
+        </svg>
+        <div class="speed-readout">
+          <div class="gear-badge" id="gear">D1</div>
+          <div class="speed-number" id="speed">0</div>
+          <div class="speed-unit">KM/H</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nitro NOS Tank & Boost Gauge -->
+    <div class="nitro-cluster" id="nitroCluster">
+      <div class="nitro-header">
+        <span class="nitro-icon">🔥</span>
+        <span class="nitro-title">NITRO BOOST</span>
+        <span class="nitro-percent" id="nitroPercent">100%</span>
+      </div>
+      <div class="nitro-tank-bar">
+        <div class="nitro-tank-fill" id="nitroFill"></div>
+        <div class="nitro-sparkles"></div>
+      </div>
+      <div class="nitro-hint">HOLD <strong>SPACE</strong> / <strong>SHIFT</strong> OR TAP NITRO</div>
+    </div>
+  </div>
+
+  <!-- Touch & Mobile Controls -->
+  <div class="controls">
+    <div class="control-group">
+      <button class="control-btn" id="leftBtn" aria-label="Steer Left">◀</button>
+      <button class="control-btn" id="rightBtn" aria-label="Steer Right">▶</button>
+    </div>
+    <div class="control-group action-group">
+      <button class="control-btn nitro-action-btn" id="nitroBtn" aria-label="Nitro Boost">
+        <span>🔥</span>
+        <span class="btn-subtext">NITRO</span>
+      </button>
+      <button class="control-btn brake-btn" id="brakeBtn" aria-label="Brake">▼</button>
+      <button class="control-btn gas-btn" id="gasBtn" aria-label="Accelerate">▲</button>
+    </div>
+  </div>
+
+  <!-- Start / Game Over Modal Dialog -->
+  <div id="message">
+    <div class="dialog" id="dialogContent">
+      <div class="badge-tag">REALISTIC 3D RACER</div>
+      <h1 class="dialog-title">3D SPEED RACER</h1>
+      <p class="dialog-desc">Push your supercar to the limit. Weave through dynamic highway traffic, trigger high-octane <strong>Nitros</strong>, and score close-overtake near misses!</p>
+
+      <div class="controls-legend">
+        <div class="legend-row"><span>Steering:</span> <strong>← → or A / D</strong></div>
+        <div class="legend-row"><span>Throttle / Brake:</span> <strong>↑ / W (Gas) · ↓ / S (Brake)</strong></div>
+        <div class="legend-row highlight-row"><span>Nitros:</span> <strong>SPACE / SHIFT / N (or tap NITRO)</strong></div>
+      </div>
+
+      <div class="palette-picker">
+        <span class="palette-label">Supercar Paint:</span>
+        <div class="palette-options">
+          <button class="color-dot active" style="--c:#e52d27;" data-color="0xe52d27" title="Rosso Corsa Red"></button>
+          <button class="color-dot" style="--c:#0072ff;" data-color="0x0072ff" title="Electric Blue"></button>
+          <button class="color-dot" style="--c:#ffb300;" data-color="0xffb300" title="Sunburst Yellow"></button>
+          <button class="color-dot" style="--c:#151515;" data-color="0x151515" title="Stealth Carbon Black"></button>
+          <button class="color-dot" style="--c:#00e676;" data-color="0x00e676" title="Viper Green"></button>
+        </div>
+      </div>
+
+      <button id="startBtn" class="cta-btn">START RACING</button>
+    </div>
+  </div>
+
+  <!-- Local Libraries (Standalone - Works offline & over file:// without CORS) -->
+  <script src="assets/three.min.js"></script>
+  <script src="assets/anime.min.js"></script>
+  <!-- Main Game Script -->
+  <script src="game.js"></script>
+</body>
+</html>
